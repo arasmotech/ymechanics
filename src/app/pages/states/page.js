@@ -104,18 +104,69 @@ const StatesPage = () => {
                 </DataTable>
 
             </Card>
-            <Sidebar visible={stateDialogVisible} style={{ width: '30%' }} position='right' onHide={() => setStateDialogVisible(false)}>
-                <h2>{name ? `Edit State: ${name}` : 'Add State'}</h2>
-                {/* Add State Form Elements Here */}
-                <div>
-                    <label className="block mb-2">Code</label>
-                    <InputText value={code} onChange={(e) => setCode(e.target.value)} />
+            <Sidebar visible={stateDialogVisible} style={{ width: '450px' }} position='right' onHide={() => setStateDialogVisible(false)} className="p-sidebar-md">
+                <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 mb-6"></div>
+
+                    {/* Form Content */}
+                    <div className="flex-1 overflow-auto">
+                        <div className="space-y-6">
+                            <div className="flex flex-col gap-2">
+                                <label htmlFor="stateCode" className="font-semibold text-gray-700 dark:text-gray-300">
+                                    State Code <span className="text-red-500">*</span>
+                                </label>
+                                <InputText
+                                    id="stateCode"
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    placeholder="e.g., CA"
+                                    className="w-full"
+                                    maxLength={2}
+                                    style={{ textTransform: 'uppercase' }}
+                                />
+                                <small className="text-gray-500 dark:text-gray-400">
+                                    Enter a 2-letter state code
+                                </small>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <label htmlFor="stateName" className="font-semibold text-gray-700 dark:text-gray-300">
+                                    State Name <span className="text-red-500">*</span>
+                                </label>
+                                <InputText
+                                    id="stateName"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="e.g., California"
+                                    className="w-full"
+                                />
+                                <small className="text-gray-500 dark:text-gray-400">
+                                    Enter the full state name
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+                        <div className="flex gap-3 justify-end">
+                            <Button
+                                label="Cancel"
+                                icon="pi pi-times"
+                                className="p-button-text p-button-secondary"
+                                onClick={() => setStateDialogVisible(false)}
+                            />
+                            <Button
+                                label="Save State"
+                                icon="pi pi-check"
+                                className="p-button-primary"
+                                onClick={saveState}
+                                disabled={!code || !name}
+                            />
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label className="block mb-2">Name</label>
-                    <InputText value={name} onChange={(e) => setName(e.target.value)} />
-                </div>
-                <Button label="Save" icon="pi pi-check" className="p-button-primary" onClick={saveState} />
             </Sidebar>
         </div>
     );
