@@ -5,12 +5,12 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mongodb"
+  url = env("DATABASE_URL")
 }
 
 enum roles {
@@ -24,9 +24,10 @@ model users {
   name      String
   username  String   @unique
   password  String
-  role_id   roles
+  role      roles
+  is_active Boolean  @default(true)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime? @default(now())
 
   @@map("users")
 }
