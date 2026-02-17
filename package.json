@@ -13,6 +13,7 @@
     "@aws-sdk/s3-request-presigner": "^3.986.0",
     "@prisma/client": "^6.13.0",
     "@react-google-maps/api": "^2.20.8",
+    "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",
     "chartjs": "^0.3.24",

@@ -39,35 +39,23 @@ const PageLayout = ({ children }) => {
             ]
         },
         {
-            label: 'Projects',
+            label: 'Providers',
             icon: 'pi pi-search',
             items: [
                 {
-                    label: 'Components',
-                    icon: 'pi pi-bolt'
+                    label: 'Pending',
+                    icon: 'pi pi-bolt',
+                    url: '/pages/providers/pending'
                 },
                 {
-                    label: 'Blocks',
-                    icon: 'pi pi-server'
+                    label: 'Approved',
+                    icon: 'pi pi-check'
                 },
                 {
-                    label: 'UI Kit',
-                    icon: 'pi pi-pencil'
-                },
-                {
-                    label: 'Templates',
-                    icon: 'pi pi-palette',
-                    items: [
-                        {
-                            label: 'Apollo',
-                            icon: 'pi pi-palette'
-                        },
-                        {
-                            label: 'Ultima',
-                            icon: 'pi pi-palette'
-                        }
-                    ]
+                    label: 'Rejected',
+                    icon: 'pi pi-times'
                 }
+
             ]
         },
         {

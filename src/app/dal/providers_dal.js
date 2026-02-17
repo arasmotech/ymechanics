@@ -37,8 +37,11 @@ export const addProviderWithUser = async (providerData, userData) => {
     });
 };
 
-export const getAllProviders = async () => {
+export const getAllProviders = async (status) => {
+    console.log('Fetching providers with status:', status);
+    const where = { status: status === 'ALL' ? undefined : status };
     return await prisma.providers.findMany({
+        where,
         include: {
             user: {
                 select: {
@@ -51,6 +54,7 @@ export const getAllProviders = async () => {
             },
             state: true,
             city: true,
+            providerDocuments: true
         },
     });
 };

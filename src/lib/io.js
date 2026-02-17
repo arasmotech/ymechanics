@@ -60,6 +60,17 @@ export async function uploadImageToS3(fileName, file) {
     }
 }
 
+export async function uploadMultipleFilesToS3(files) {
+    const uploadPromises = files.map(async (file) => {
+        const fileName = file.name;
+        const result = await uploadImageToS3(fileName, file);
+        return { fileName, ...result };
+    });
+
+    const results = await Promise.all(uploadPromises);
+    return results;
+}
+
 export async function getSignedUrlGetFunction(fileName) {
     console.log("Generating signed URL for", fileName);
     const s3 = new S3Client({

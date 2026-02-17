@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request) {
     try {
-        const providers = await getProvidersService();
+        const searchParams = new URL(request.url).searchParams;
+        const status = searchParams.get('status');
+        const providers = await getProvidersService(status);
         return NextResponse.json({
             statusCode: "200",
             message: "Providers fetched successfully",
