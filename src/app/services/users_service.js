@@ -1,4 +1,5 @@
 import { generateToken } from "@/lib/jwt";
+import { getProviderByEmail } from "../dal/providers_dal";
 import { addUser, getUserByUsername, getAllUsers, getUserById, updateUserDal } from "../dal/users_dal";
 const bcrypt = require('bcryptjs');
 
@@ -56,7 +57,10 @@ export const validateLogin = async (username, password) => {
         if (!isMatch) {
             return { message: "Invalid password", statusCode: "401" };
         }
-        const generatedToken = await generateToken({ id: user.id, username: user.username, role: user.role });
+
+        const ref_id = user.role === 'MECHANIC' ? (await getProviderByEmail(user.username))?.id : user.role === 'CUSTOMER' ? null : null;
+
+        const generatedToken = await generateToken({ id: user.id, username: user.username, role: user.role, ref_id });
 
         return { message: "Login successful", statusCode: "200", data: generatedToken };
     } catch (error) {

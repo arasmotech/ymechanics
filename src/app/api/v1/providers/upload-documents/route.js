@@ -1,64 +1,31 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
 import prisma from '@/lib/prisma';
+import { addProviderDocumentsService } from '@/app/services/provider_docs_service';
 
 export async function POST(request) {
     try {
-        const formData = await request.formData();
-        const files = formData.getAll('documents');
+        const providerDocs = await request.json();
+        console.log('Request:', providerDocs);
+        const { provider_id, documents } = providerDocs;
 
-        if (!files || files.length === 0) {
-            return NextResponse.json(
-                { error: 'No files uploaded' },
-                { status: 400 }
-            );
+        if (!provider_id || !documents || !Array.isArray(documents) || documents.length === 0) {
+            return NextResponse.json({ error: 'Invalid request data' }, { status: 400 });
         }
 
-        // TODO: Get provider email from session/JWT token
-        // For now using mock email
-        const providerEmail = 'john.doe@example.com';
-
-        // Create uploads directory if it doesn't exist
-        const uploadDir = join(process.cwd(), 'public', 'uploads', 'documents');
-        if (!existsSync(uploadDir)) {
-            await mkdir(uploadDir, { recursive: true });
+        const provider = await prisma.providers.findUnique({ where: { id: provider_id } });
+        if (!provider) {
+            return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
         }
 
-        const uploadedPaths = [];
-
-        for (const file of files) {
-            const bytes = await file.arrayBuffer();
-            const buffer = Buffer.from(bytes);
-
-            // Generate unique filename
-            const timestamp = Date.now();
-            const filename = `${timestamp}-${file.name}`;
-            const filepath = join(uploadDir, filename);
-
-            // Save file
-            await writeFile(filepath, buffer);
-
-            // Store relative path
-            uploadedPaths.push(`/uploads/documents/${filename}`);
+        const addProviderDocument = await addProviderDocumentsService(provider_id, documents);
+        if (addProviderDocument === 0) {
+            return NextResponse.json({ error: 'Failed to save document metadata' }, { status: 500 });
         }
-
-        // Update provider documents in database
-        await prisma.providers.update({
-            where: { email: providerEmail },
-            data: {
-                documents: {
-                    push: uploadedPaths
-                },
-                updatedAt: new Date()
-            }
-        });
 
         return NextResponse.json({
             success: true,
             message: 'Documents uploaded successfully',
-            files: uploadedPaths
+            files: documents
         }, { status: 200 });
 
     } catch (error) {

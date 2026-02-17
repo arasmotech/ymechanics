@@ -61,8 +61,37 @@ export const addProviderService = async (providerData) => {
     };
 };
 
-export const getProvidersService = async () => {
-    return await providersDal.getAllProviders();
+export const getProvidersService = async (status) => {
+    const providers = await providersDal.getAllProviders(status);
+    const formattedProviders = providers.map(provider => {
+        const { user, state, city, providerDocuments, ...providerWithoutRelations } = provider;
+        return {
+            ...providerWithoutRelations,
+            user: {
+                id: user.id,
+                name: user.name,
+                username: user.username,
+                role: user.role,
+                is_active: user.is_active,
+            },
+            state: {
+                id: state.id,
+                name: state.name,
+            },
+            city: {
+                id: city.id,
+                name: city.name,
+            },
+            providerDocuments: providerDocuments.map(doc => ({
+                id: doc.id,
+                document_type: doc.document_type,
+                document_url: doc.document_url,
+            })),
+        };
+    });
+
+    return formattedProviders;
+
 };
 
 export const getProviderService = async (id) => {

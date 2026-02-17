@@ -18,6 +18,7 @@ import { Message } from "primereact/message";
 import { ProgressBar } from "primereact/progressbar";
 import { verifyToken } from "@/lib/jwt";
 import { getSignedUrlPutFunction, uploadImageToS3, getSignedUrlGetFunction } from "@/lib/io";
+import axios from "axios";
 
 export default function MechanicDashboard() {
     const router = useRouter();
@@ -119,8 +120,10 @@ export default function MechanicDashboard() {
         setUploading(true);
         const files = event.files;
         setFileName(files[0].name);
+        console.log(files[0]);
         try {
             const formData = new FormData();
+
             files.forEach(file => {
                 formData.append('documents', file);
             });
@@ -128,18 +131,48 @@ export default function MechanicDashboard() {
             const objectKey = await getSignedUrlPutFunction('mechanics/documents/' + files[0].name);
             setSignedUrl(objectKey);
 
-            const result = await uploadImageToS3('mechanics/documents/' + files[0].name, files[0]);
-            console.log('Upload result:', result);
-
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Documents uploaded successfully! Awaiting admin approval.',
-                life: 5000
+            await axios.put(objectKey, files[0], {
+                headers: {
+                    'Content-Type': files[0].type
+                }
             });
+
+            fetch('/api/v1/providers/upload-documents', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+                },
+                body: JSON.stringify({
+                    provider_id: provider.id,
+                    documents: files.map(file => ({
+                        document_type: file.type,
+                        document_url: 'mechanics/documents/' + files[0].name
+                    }))
+                })
+            }).then(response => response.json())
+                .then(data => {
+                    toast.current?.show({
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: data.message || 'Documents uploaded successfully',
+                        life: 5000
+                    });
+                })
+                .catch(error => {
+                    console.error('Error uploading document metadata:', error);
+                    toast.current?.show({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: error.message || 'Failed to upload document metadata',
+                        life: 5000
+                    });
+                })
+
 
             setUploadedFiles([...uploadedFiles, ...files.map(f => f.name)]);
             fileUploadRef.current?.clear();
+
 
         } catch (error) {
             toast.current?.show({
@@ -233,6 +266,7 @@ export default function MechanicDashboard() {
                                     <p className="text-sm text-gray-500">PDF or Images (Max 5MB per file)</p>
                                 </div>
                             }
+
                             url={signedUrl}
                             customUpload
                             uploadHandler={handleFileUpload}
