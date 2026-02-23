@@ -12,6 +12,7 @@ import { Avatar } from "primereact/avatar";
 import { Image } from "primereact/image";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Carousel } from "primereact/carousel";
+import { getSignedUrlGetFunction } from "@/lib/io";
 
 export default function PendingProvidersPage() {
     const toast = useRef(null);
@@ -25,6 +26,10 @@ export default function PendingProvidersPage() {
         fetchPendingProviders();
     }, []);
 
+    useEffect(() => {
+        console.log('Providers updated:', providers);
+    }, [providers]);
+
     const fetchPendingProviders = async () => {
         setLoading(true);
         try {
@@ -37,7 +42,29 @@ export default function PendingProvidersPage() {
             const data = await response.json();
 
             if (response.ok) {
-                setProviders(data.data || []);
+                var providersList = data.data || [];
+                for (const provider of providersList) {
+                    if (provider.providerDocuments) {
+                        for (const doc of provider.providerDocuments) {
+                            const doc_url = await getSignedUrlGetFunction(doc.document_url);
+                            doc.document_url = doc_url;
+                            provider.providerDocuments[provider.providerDocuments.indexOf(doc)].document_url = doc_url;
+                        }
+
+                        // provider.providerDocuments = provider.providerDocuments.map(doc => ({
+                        //     ...doc,
+                        //     document_url: `${process.env.NEXT_PUBLIC_AWS_S3_BUCKET_URL}/${doc.document_url}`
+                        // }));
+
+                        providersList[providersList.indexOf(provider)].providerDocuments = provider.providerDocuments;
+                        await setProviders(providersList);
+
+                    }
+
+                }
+
+
+
             } else {
                 throw new Error(data.error || 'Failed to fetch providers');
             }
@@ -212,15 +239,16 @@ export default function PendingProvidersPage() {
     };
 
     const documentItemTemplate = (document) => {
-        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(document);
-        const isPDF = /\.pdf$/i.test(document);
+        console.log('Document:', document);
+        const isImage = document.document_url.includes('.jpg') || document.document_url.includes('.jpeg') || document.document_url.includes('.png') || document.document_url.includes('.gif');
+        const isPDF = document.document_url.includes('.pdf');
 
         return (
             <div className="p-4 border rounded-lg">
                 {isImage ? (
                     <Image
-                        src={document}
-                        alt="Document"
+                        src={document.document_url}
+                        alt="Image Document"
                         width="100%"
                         preview
                         className="rounded"
@@ -232,18 +260,19 @@ export default function PendingProvidersPage() {
                         <Button
                             label="View PDF"
                             icon="pi pi-external-link"
-                            onClick={() => window.open(document, '_blank')}
+                            onClick={() => window.open(document.document_url, '_blank')}
                             outlined
                         />
                     </div>
                 ) : (
                     <div className="text-center py-8">
                         <i className="pi pi-file text-6xl text-gray-400 mb-3"></i>
-                        <p className="text-sm text-gray-600 mb-3">Document</p>
+                        <p className="text-sm text-gray-600 mb-3">Document
+                        </p>
                         <Button
                             label="Download"
                             icon="pi pi-download"
-                            onClick={() => window.open(document, '_blank')}
+                            onClick={() => window.open(document.document_url, '_blank')}
                             outlined
                         />
                     </div>
@@ -257,7 +286,7 @@ export default function PendingProvidersPage() {
             <div>
                 {selectedProvider && (
                     <span className="text-sm text-gray-600">
-                        {selectedProvider.documents?.length || 0} document(s) uploaded
+                        {selectedProvider.providerDocuments?.length || 0} document(s) uploaded
                     </span>
                 )}
             </div>
@@ -276,7 +305,7 @@ export default function PendingProvidersPage() {
                         setShowDocumentsDialog(false);
                         handleApprove(selectedProvider);
                     }}
-                    disabled={!selectedProvider?.documents?.length}
+                    disabled={!selectedProvider?.providerDocuments?.length}
                 />
             </div>
         </div>

@@ -74,12 +74,12 @@ export async function uploadMultipleFilesToS3(files) {
 export async function getSignedUrlGetFunction(fileName) {
     console.log("Generating signed URL for", fileName);
     const s3 = new S3Client({
-        region: process.env.AWS_S3_REGION ? process.env.AWS_S3_REGION : 'blr1',
+        region: process.env.NEXT_PUBLIC_AWS_S3_REGION ? process.env.NEXT_PUBLIC_AWS_S3_REGION : 'blr1',
         credentials: {
-            accessKeyId: process.env.AWS_S3_ACCESS_KEY ? process.env.AWS_S3_ACCESS_KEY : 'DO801VUF7DJ2KNR9XDL7',
-            secretAccessKey: process.env.AWS_S3_SECRET_KEY ? process.env.AWS_S3_SECRET_KEY : 'go8daNmwLELyJDVmsz9sD3eg/YgjW1d/CQz5pD3nHLI',
+            accessKeyId: process.env.NEXT_PUBLIC_AWS_S3_ACCESS_KEY ? process.env.NEXT_PUBLIC_AWS_S3_ACCESS_KEY : 'DO801VUF7DJ2KNR9XDL7',
+            secretAccessKey: process.env.NEXT_PUBLIC_AWS_S3_SECRET_KEY ? process.env.NEXT_PUBLIC_AWS_S3_SECRET_KEY : 'go8daNmwLELyJDVmsz9sD3eg/YgjW1d/CQz5pD3nHLI',
         },
-        endpoint: process.env.AWS_S3_BUCKET_URL ? process.env.AWS_S3_BUCKET_URL : `https://sdhub.blr1.digitaloceanspaces.com`,
+        endpoint: process.env.NEXT_PUBLIC_AWS_S3_BUCKET_URL ? process.env.NEXT_PUBLIC_AWS_S3_BUCKET_URL : `https://sdhub.blr1.digitaloceanspaces.com`,
         forcePathStyle: false,
     });
     const params = {
